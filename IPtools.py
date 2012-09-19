@@ -1,14 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# IPtools v2.0.0 (15.09.2012) by Bystroushaak (bystrousak@kitakitsune.org)
+# IPtools v2.1.0 (15.09.2012) by Bystroushaak (bystrousak@kitakitsune.org)
 #
 # Imports ======================================================================
 import os
 import sys
-import urllib2
 import socket
+import random
+import urllib2
 from threading import Timer
+
+
+try:
+	import pexpect
+except ImportError, e:
+	sys.stderr.write("I do require pexpect module. You can get it from\n")
+	sys.stderr.write("http://sourceforge.net/projects/pexpect/\n")
+	raise e
 
 
 try:
@@ -17,6 +26,7 @@ except ImportError, e:
 	sys.stderr.write("I do require sock module. You can get it from\n")
 	sys.stderr.write("http://socksipy.sourceforge.net/\n")
 	raise e
+
 
 try:
 	from timeout import timeout
@@ -42,7 +52,7 @@ ssjWv84fYU34lA==""")))
 
 
 # Vars =========================================================================
-ip = ["", ""]
+IP = ["", ""]
 TIMEOUT = 5.0
 
 
@@ -77,29 +87,60 @@ def __getPage(url):
 
 
 def getIP():
+	"Return IP address (from http://anoncheck.security-portal.cz/)."
+
 	ipstr = filter(lambda x: x.startswith("Vaše IP"), __getPage("http://anoncheck.security-portal.cz/").splitlines())[0]
 	return "".join(filter(lambda x: x.isdigit() or x == ".", list(ipstr)))
 	
 
 @timeout(int(TIMEOUT * 2), None)
-def installProxy(SOCK_ADDR, SOCK_PORT):
+def installProxy(SOCK_ADDR, SOCK_PORT, check_ip = True):
+	"Install SOCKS5 proxy."
+
 	# get normal ip
-	try:
-		ip[0] = getIP()
-	except:
-		raise ProxyException("Can't connect to internet!")
+	if check_ip:
+		try:
+			IP[0] = getIP()
+		except:
+			raise ProxyException("Can't connect to internet!")
 
 	# apply proxy
 	socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, SOCK_ADDR, SOCK_PORT)
 	socket.socket = socks.socksocket
 
 	# get ip over proxy
-	try:
-		ip[1] = getIP()
-	except ProxyTimeout, e:
-		raise e
-	except:
-		raise ProxyException("Your SOCK5 proxy (" + SOCK_ADDR + ":" + str(SOCK_PORT) + ") isn't responding!")
+	if check_ip:
+		try:
+			IP[1] = getIP()
+		except ProxyTimeout, e:
+			raise e
+		except:
+			raise ProxyException("Your SOCK5 proxy (" + SOCK_ADDR + ":" + str(SOCK_PORT) + ") isn't responding!")
 
-	if ip[0] == ip[1]:
-		raise ProxyException("This proxy doesn't hides your IP, use better one")
+		if IP[0] == IP[1]:
+			raise ProxyException("This proxy doesn't hides your IP, use better one")
+
+
+def ssh_tunnel(login_serv, e, port = None, check_ip = True, timeout = 10):
+	"Create ssh SOCKS5 tunnel."
+
+	if port == None:
+		port = random.randint(1025, 65534)
+
+	# create ssh tunnel
+	c = pexpect.spawn("ssh -D " + str(port) + " " + login_serv)
+	tmp = c.expect([e, "yes/no"], timeout = timeout)
+
+	# ssh key authorization
+	if tmp == 1:
+		c.sendline("yes")
+		c.expect(e, timeout = timeout)
+
+	installProxy("127.0.0.1", port, check_ip = check_ip)
+
+	return c
+
+
+# Main =========================================================================
+if __name__ == '__main__':
+	print "IPTools; https://github.com/Bystroushaak/IPtools"
