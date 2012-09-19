@@ -54,6 +54,7 @@ ssjWv84fYU34lA==""")))
 # Vars =========================================================================
 IP = ["", ""]
 TIMEOUT = 5.0
+ORIG_SOCK = None
 
 
 
@@ -104,6 +105,10 @@ def installProxy(SOCK_ADDR, SOCK_PORT, check_ip = True):
 		except:
 			raise ProxyException("Can't connect to internet!")
 
+	# save original socket
+	global ORIG_SOCK
+	ORIG_SOCK = socket.socket
+
 	# apply proxy
 	socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, SOCK_ADDR, SOCK_PORT)
 	socket.socket = socks.socksocket
@@ -112,7 +117,7 @@ def installProxy(SOCK_ADDR, SOCK_PORT, check_ip = True):
 	if check_ip:
 		try:
 			IP[1] = getIP()
-		except ProxyTimeout, e:
+		except ProxyTimeoutException, e:
 			raise e
 		except:
 			raise ProxyException("Your SOCK5 proxy (" + SOCK_ADDR + ":" + str(SOCK_PORT) + ") isn't responding!")
@@ -121,7 +126,7 @@ def installProxy(SOCK_ADDR, SOCK_PORT, check_ip = True):
 			raise ProxyException("This proxy doesn't hides your IP, use better one")
 
 
-def ssh_tunnel(login_serv, e, port = None, check_ip = True, timeout = 10):
+def sshTunnel(login_serv, e, port = None, check_ip = True, timeout = 10):
 	"Create ssh SOCKS5 tunnel."
 
 	if port == None:
@@ -136,7 +141,7 @@ def ssh_tunnel(login_serv, e, port = None, check_ip = True, timeout = 10):
 		c.sendline("yes")
 		c.expect(e, timeout = timeout)
 
-	installProxy("127.0.0.1", port, check_ip = check_ip)
+	installProxy("127.0.0.1", port, check_ip)
 
 	return c
 
