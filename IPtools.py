@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# IPtools v2.1.0 (15.09.2012) by Bystroushaak (bystrousak@kitakitsune.org)
+# IPtools v2.2.0 (07.07.2012) by Bystroushaak (bystrousak@kitakitsune.org)
 #
 # Imports ======================================================================
 import os
@@ -28,26 +28,7 @@ except ImportError, e:
 	raise e
 
 
-try:
-	from timeout import timeout
-except ImportError, e:
-	import base64, zlib
-
-	f = open("timeout.py", "w")
-	f.write(zlib.decompress(base64.b64decode("""eJx9UsFOhDAQvfcrxnCBzbKYPRmMBw/G
-mOhFvW8qtNCktKSdbuTvLUvZUDDby3Rm3kzfe5DcFc6a4keogqkz9AO2WpEE8l0Ola6FakpwyPOHsUIS
-36kMqwU+QovYl0XRN07UzB4Uw2KaztGhNoLKay46ph3mNOdOVSi0Kojoem0Q7GCvV9EoKgmQSlJr4Xsa
-evmtWD+OpNdbVgIBf/oR5vE14xCeSEM8jXEPvkOdxKy84Be400wk5aE5A/gx3VHT2EV5PdtSVUtm0pGw
-6/bADe3YCj8eQ4VlWx0ZgQiqZT2vhKfgwmEKaci+3l6f3z8/9msKWbwpoKmkpoucyCABNKLxL1yaIBQs
-+2BZpVVto21ohhK2ohieqfREefApQrCLyo3mf7xh6IyaP1DU5sKLkMN25rY1Cxtv2XIfEw48JlVkVeVH
-ssjWv84fYU34lA==""")))
-	f.close()
-
-	try:
-		from timeout import timeout
-	except ImportError, e:
-		sys.stderr.write("Lol, you are fucked. Read only medium? SRSLY?\n")
-		raise e
+from timeout import timeout
 
 
 
