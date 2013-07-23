@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# IPtools v3.0.0 (23.07.2013) by Bystroushaak (bystrousak@kitakitsune.org)
+# IPtools v3.0.1 (24.07.2013) by Bystroushaak (bystrousak@kitakitsune.org)
 #
 # Imports #####################################################################
 import sys
@@ -114,10 +114,14 @@ def sshTunnel(login_serv, e, port = None, check_ip = True, timeout = TIMEOUT):
 
 	Example:
 	---
+	import IPtools
+
 	print IPtools.getIP() # -> your IP
 
-	proxy_port = IPtools.sshTunnel("ssh@somewhere.com", timeout = 30)
-	IPtools.installProxy("localhost", 2222)
+	IPtools.installProxy(
+		"localhost",
+		IPtools.sshTunnel("ssh@somewhere.com", timeout = 30)
+	)
 
 	print IPtools.getIP() # -> tunnel's IP
 	---
