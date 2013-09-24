@@ -1,0 +1,64 @@
+Module to ease installation SOCK5 proxy and creating SSH tunnels.
+
+Author: Bystroushaak (bystrousak@kitakitsune.org)
+
+== Examples
+=== Checking your IP
+{{{
+>>> import IPtools
+>>> IPtools.getIP()
+'429.292.637.2'  # modified to protect my privacy
+}}}
+
+=== Installing SOCKS5 proxy
+
+{{{
+>>> IPtools.installProxy("server", int(port))
+}}}
+
+=== Creating SSH tunnel
+{{{
+>>> port = IPtools.sshTunnel("bystrousak@kitakitsune.org", "###")
+}}}
+
+Function {{{sshTunnel()}}} expects two parameters - {{{login_serv}}}, which will be given to system to build SSH connection and {{{e}}}, which will tell what to expect when connected.
+
+You can also set {{{check_ip}}} ({{{True/False}}}) to automatically check your IP and raise {{{ProxyException}}} when proxy isn't hiding your IP. There is also {{{timeout}}} parameter, which tell how long will script wait for SSH connection.
+
+Timeouts can be set globaly by modifying {{{.TIMEOUT}}} property.
+
+Returned port is {{{random.randint(1025, 65534)}}} or defined by {{{port}}} keyword. Function doesn't check port usage, so if it is used, it will get ugly.
+
+=== Creating and installing SSH tunnel
+
+{{{
+>>> IPtools.installProxy("localhost", IPtools.sshTunnel("bystrousak@kitakitsune.org", "###"))
+>>> IPtools.getIP()
+'31.31.73.113'
+}}}
+
+=== Restoring original socket
+
+Original socket is stored in {{{.ORIG_SOCK}}} property. You can restore it manually:
+
+{{{
+>>> import socket
+>>> socket.socket = IPtools.ORIG_SOCK
+}}}
+
+or by calling {{{.restoreSocket()}}}:
+
+
+{{{
+>>> import IPtools
+>>> IPtools.getIP()
+'429.292.637.2'
+>>> IPtools.installProxy("localhost", IPtools.sshTunnel("bystrousak@kitakitsune.org", "###"))
+>>> IPtools.getIP()
+'31.31.73.113'
+>>> IPtools.restoreSocket()
+>>> IPtools.getIP()
+'429.292.637.2'
+>>>
+}}}
+
