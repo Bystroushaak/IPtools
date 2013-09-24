@@ -1,4 +1,4 @@
-Module to ease installation SOCK5 proxy and creating SSH tunnels.
+Module to ease usage of SOCK5 proxy and SSH tunnel installation.
 
 Author: Bystroushaak (bystrousak@kitakitsune.org)
 
