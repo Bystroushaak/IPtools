@@ -39,12 +39,12 @@ def timeout(timeout_time, default, exception_message = None):
 	default value.
 	"""
 	def __timeout_function(f):
-		def f2(*args):
+		def f2(*args, **kwargs):
 			old_handler = signal.signal(signal.SIGALRM, __timeout_handler)
 			signal.alarm(timeout_time)  # triger alarm in timeout_time seconds
 
 			try:
-				retval = f(*args)
+				retval = f(*args, **kwargs)
 			except TimeoutException:
 				if exception_message is not None:
 					raise TimeoutException(str(exception_message))
