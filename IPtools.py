@@ -66,11 +66,18 @@ except ImportError, e:
     raise
 
 
-from timeout import timeout
+try:
+    from timeout_wrapper import timeout
+except ImportError, e:
+    sys.stderr.write(
+        "I do require sock module. You can get it from\n"
+        "using sudo pip install -U timeout_wrapper.\n"
+    )
+    raise
 
 
 # Vars ########################################################################
-__IP = ["", ""]
+_IP = ["", ""]
 TIMEOUT = 10.0
 ORIG_SOCK = None
 
@@ -88,10 +95,9 @@ class ProxyException(Exception):
 
 @timeout(
     int(TIMEOUT / 2),
-    None,
-    "This proxy is slower than your " + str(TIMEOUT) + "s .TIMEOUT property!"
+    exception_message="The proxy is slower than your %ss .TIMEOUT!" % TIMEOUT
 )
-def __getPage(url):
+def _get_page(url):
     f = urllib2.urlopen(url)
     data = f.read()
     f.close()
@@ -100,10 +106,16 @@ def __getPage(url):
 
 
 def getIP():
-    "Return current IP address."
+    """
+    Get current IP address.
 
-    data = __getPage("http://www.whatsmyip.us/showipsimple.php")
-    return data.replace('document.write("', "").replace('");', "").strip()
+    Returns:
+        str: IP address.
+    """
+
+    data = _get_page("http://myip.cz")
+    data = data.split("Your IP Address is: <b>")[-1].split("</b>")[0]
+    return data.strip()
 
 
 @timeout(int(TIMEOUT), None)
@@ -113,11 +125,10 @@ def installProxy(SOCK_ADDR, SOCK_PORT, check_ip=True):
 
     Raise ProxyTimeoutException
     """
-
     # get normal ip
     if check_ip:
         try:
-            __IP[0] = getIP()
+            _IP[0] = getIP()
         except Exception, e:
             raise ProxyException("Can't connect to internet!\n" + str(e))
 
@@ -130,20 +141,22 @@ def installProxy(SOCK_ADDR, SOCK_PORT, check_ip=True):
     socket.socket = socks.socksocket
 
     # get ip over proxy
-    if check_ip:
-        try:
-            __IP[1] = getIP()
-        except Exception, e:
-            raise ProxyException(
-                "Your SOCK5 proxy (" + SOCK_ADDR + ":" + str(SOCK_PORT) + ") "
-                "isn't responding!\n" +
-                str(e)
-            )
+    if not check_ip:
+        return
 
-        if __IP[0] == __IP[1]:
-            raise ProxyException(
-                "This proxy doesn't hides your IP, use better one"
-            )
+    try:
+        _IP[1] = getIP()
+    except Exception, e:
+        raise ProxyException(
+            "Your SOCK5 proxy (" + SOCK_ADDR + ":" + str(SOCK_PORT) + ") "
+            "isn't responding!\n" +
+            str(e)
+        )
+
+    if _IP[0] == _IP[1]:
+        raise ProxyException(
+            "This proxy doesn't hides your IP, use better one"
+        )
 
 
 def sshTunnel(login_serv, e, port=None, timeout=TIMEOUT):
@@ -166,7 +179,6 @@ def sshTunnel(login_serv, e, port=None, timeout=TIMEOUT):
 
     Return port where the tunnel is listenning.
     """
-
     if port is None:
         port = random.randint(1025, 65534)
 
