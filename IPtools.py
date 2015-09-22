@@ -86,11 +86,7 @@ EXPECT_CLASS = []  # this is necessary due to garbage collector
 
 # Functions & objects #########################################################
 class ProxyException(Exception):
-    def __init__(self, msg):
-        self.msg = msg
-
-    def __str__(self):
-        return repr(self.msg)
+    pass
 
 
 @timeout(
@@ -112,7 +108,6 @@ def getIP():
     Returns:
         str: IP address.
     """
-
     data = _get_page("http://myip.cz")
     data = data.split("Your IP Address is: <b>")[-1].split("</b>")[0]
     return data.strip()
@@ -155,7 +150,7 @@ def installProxy(SOCK_ADDR, SOCK_PORT, check_ip=True):
 
     if _IP[0] == _IP[1]:
         raise ProxyException(
-            "This proxy doesn't hides your IP, use better one"
+            "This proxy doesn't hides your IP, use better one."
         )
 
 
